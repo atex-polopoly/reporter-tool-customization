@@ -1,0 +1,129 @@
+<table class="table onecms-table" x-ng-show="articles.length > 0">
+  <thead class="hidden-xs">
+    <tr>
+      <th style="width: 37px;">
+        <span class="fa fa-refresh" x-ng-class="{'fa-spin': syncInProgress}" role="button" x-ng-click="synchronize()" title="Synchronize"></span>
+      </th>
+      <th class="no-select" role="button" x-ng-click="sortBy('title')">Title <i class="fa" x-ng-class="{'fa-angle-down': listOptions.sortField=='title' && listOptions.reverseSort, 'fa-angle-up': listOptions.sortField=='title' && !listOptions.reverseSort}"></i></th>
+      <th class="no-select" role="button" style="width: 100px;" x-ng-click="sortBy('title')">Status <i class="fa" x-ng-class="{'fa-angle-down': listOptions.sortField=='title' && listOptions.reverseSort, 'fa-angle-up': listOptions.sortField=='title' && !listOptions.reverseSort}"></i></th>
+      <th class="no-select" role="button" style="width: 180px;" x-ng-click="sortBy('dateModified')">Modified <i class="fa" x-ng-class="{'fa-angle-down': listOptions.sortField=='dateModified' && listOptions.reverseSort, 'fa-angle-up': listOptions.sortField=='dateModified' && !listOptions.reverseSort}"></i></th>
+      <th class="no-select action-column">Actions</th>
+    </tr>
+  </thead>
+  <tbody x-ng-repeat="article in articles | filter:listFilter | orderBy:sortPredicate:listOptions.reverseSort">
+    <tr ng-init="itemDetails = getItemDetails(article)">
+      <td class="expander-column">
+        <a class="btn-link list-details-expander collapsed" data-toggle="collapse" data-target="#list-details-{{id(article.meta.id)}}">
+          <i class="fa fa-caret-down fa-lg"></i>
+        </a>
+      </td>
+      <td>
+        <div class="list-title-wrapper">
+          <div class="list-title">
+            <a x-ng-show="itemDetails.hasTemplate;" href="#/edit/{{article.meta.id}}">{{getDisplayTitle(itemDetails)}}</a>
+            <span x-ng-show="!itemDetails.hasTemplate;" class="text-muted">{{getDisplayTitle(itemDetails)}}</span>
+          </div>
+
+          <div class="status-icons">
+            <span x-ng-show="!itemDetails.hasTemplate;">
+              <span class="label label-warning visible-md visible-lg" x-popover title="No template" data-content="There is no template registered for this type of content; you will not be able to edit it.">No template</span>
+              <i class="fa fa-exclamation-circle fa-lg fa-fw hidden-md hidden-lg text-warning" x-tooltip title="No template"></i>
+            </span>
+
+            <span x-ng-show="!article.local.persisted && !article.isBeingSent && !article.local.conflict">
+              <span class="label label-warning visible-md visible-lg" x-popover title="Modified" data-content="This article has been modified by you and has not been sent to the server.">Modified</span>
+              <i class="fa fa-refresh fa-lg fa-fw hidden-md hidden-lg text-warning" x-tooltip title="Modified"></i>
+            </span>
+
+            <span x-ng-show="article.local.conflict && !article.isBeingSent">
+              <span class="label label-danger visible-md visible-lg" x-popover title="Conflict" data-content="This article has been modified by you and there is a newer version on the server.">Conflict</span>
+              <i class="fa fa-code-fork fa-lg fa-fw hidden-md hidden-lg text-danger" x-tooltip title="Conflict"></i>
+            </span>
+
+            <span x-ng-show="article.local.syncFailed && !article.sendError">
+              <span class="label label-danger visible-md visible-lg" x-popover title="Sync Failed" data-content="This article failed to sync, please see the notification center for more information.">Sync Failed</span>
+              <i class="fa fa-minus-circle fa-lg fa-fw hidden-md hidden-lg text-danger" x-tooltip title="Sync Failed"></i>
+            </span>
+
+            <span x-ng-show="!article.local.valid && !article.isBeingSent">
+              <span class="label label-danger visible-md visible-lg" x-popover title="Invalid" data-content="This article has fields which do not validate.">Invalid</span>
+              <i class="fa fa-exclamation-circle fa-lg fa-fw hidden-md hidden-lg text-danger" x-tooltip title="Invalid"></i>
+            </span>
+
+            <span x-ng-show="article.sendError && !article.isBeingSent">
+              <a onclick="return false;" x-ng-click="requestSendErrorDialog(article);" class="label label-danger visible-md visible-lg">Send Failed</a>
+              <a onclick="return false;" x-ng-click="requestSendErrorDialog(article);"><i class="fa fa-exclamation-circle fa-lg fa-fw hidden-md hidden-lg text-danger"></i></a>
+            </span>
+
+            <span x-ng-show="article.sendCancelled && !article.isBeingSent">
+              <span class="label label-danger visible-md visible-lg" x-popover title="Cancelled" data-content="Operation was cancelled">Cancelled</span>
+              <i class="fa fa-exclamation-circle fa-lg fa-fw hidden-md hidden-lg text-danger" x-tooltip title="Cancelled"></i>
+            </span>
+
+            <span class="listview-spinner onecms-spinner-icon" x-ng-show="article.isBeingSent">&nbsp;</span>
+
+            <span x-ng-show="article.wasJustSaved">
+              <span class="label label-success visible-md visible-lg">Success</span>
+              <i class="fa fa-check fa-lg fa-fw hidden-md hidden-lg text-success" x-tooltip title="Success"></i>
+            </span>
+          </div>
+        </div>
+      </td>
+      <td class="hidden-xs">
+        {{article.meta.id}}
+      </td>
+      <td class="hidden-xs">
+        {{timeAgo(article.meta.modificationDate)}}
+      </td>
+      <td class="action-column">
+        <div class="btn-group">
+          <a class="btn btn-default primary-action" x-ng-class="{ 'disabled': article.isBeingSent }" onclick="return false;" x-ng-click="performPrimaryAction(article)">
+            <span class="visible-inline-md visible-inline-lg">{{getPrimaryLabel(article)}}</span>
+            <i class="fa {{getPrimaryIcon(article)}} fa-lg fa-fw hidden-inline-md hidden-inline-lg"></i>
+          </a>
+
+          <button class="btn btn-default dropdown-toggle" x-ng-class="{ 'disabled': article.isBeingSent }" data-toggle="dropdown">
+            <span class="caret"></span>
+          </button>
+
+          <ul class="dropdown-menu dropdown-menu-right" role="menu" ng-init="suitableTemplates = getTemplatesFor(itemDetails)">
+            <li x-ng-class="{ 'disabled': !itemDetails.hasTemplate }"><a onclick="return false;" x-ng-click="editArticle(article);">Edit content</a></li>
+            <li x-ng-show="suitableTemplates.length > 1"><ul class="list-view-edit-menu" x-ng-repeat="suitableTemplate in suitableTemplates"><li><a onclick="return false;" x-ng-click="editArticleUsing(article, suitableTemplate);">Edit using {{suitableTemplate.label}}</a></li></ul></li>
+            <li x-ng-class="{ 'disabled': !isSendable(article) }"><a onclick="return false;" x-ng-click="storeToServer(article)">Send to server</a></li>
+            <li x-ng-show="article.local.conflict"><a onclick="return false;" x-ng-click="requestConflictResolution(article);">Resolve conflict</a></li>
+            <li><a onclick="return false;" x-ng-click="requestDestroy(article);">Remove from device</a></li>
+          </ul>
+
+        </div>
+      </td>
+    </tr>
+    <tr class="list-details">
+      <td></td>
+      <td colspan="3">
+        <div class="collapse" id="list-details-{{id(article.meta.id)}}">
+          <div class="details">
+            <h4>{{getTemplateLabel(itemDetails)}}</h4>
+            <dl class="dl-horizontal small">
+              <dt>Content type</dt>
+              <dd>{{article.data.aspects.contentData.data._type}}</dd>
+              <dt>Creation date</dt>
+              <dd>{{toDateString(article.meta.creationDate)}}</dd>
+              <dt>Modification date</dt>
+              <dd>{{toDateString(article.meta.modificationDate)}}</dd>
+            </dl>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div x-ng-show="articles.length == 0" class="empty-view text-muted">
+  <h1 class="hidden-xs">No content created yet</h1>
+  <h1 class="visible-xs">No content yet</h1>
+
+  <p>
+    It seems like you have not created any content yet. You can do so by using the <strong>Create New...</strong> action in the navigation bar.
+    Content you create in the Contributor Tool is automatically saved as changes are made, so there is no need to keep track of a save button.
+  </p>
+</div>

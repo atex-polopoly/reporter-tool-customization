@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Atex Contributor Tool</title>
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <style type="text/css">
+    body { padding-bottom: 40px; }
+  </style>
+
+  <link rel='stylesheet' href="atex/onecms-theme/3.7.0/css/onecms-theme.css">
+  <link href="webjars/toastr/2.0.1/toastr.min.css" rel="stylesheet">
+
+  <link rel='stylesheet' href='webjars/font-awesome/4.2.0/css/font-awesome.min.css'>
+
+  <link href="css/art.css" rel="stylesheet">
+  <link href="css/custom.css" rel="stylesheet">
+</head>
+
+<body x-disable-drop>
+<div class="page-container">
+  <nav class="navbar navbar-default no-select ng-cloak" role="navigation" x-ng-controller="ArtNavbarCtrl">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".act-navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#/"> <img alt="ACT" class="brand-logo" src="img/act.png"></a>
+      </div>
+      <div x-autoclose-navbar class="collapse navbar-collapse act-navbar-collapse">
+        <ul class="nav navbar-nav">
+          <form class="navbar-form navbar-left" x-ng-show="showSearch">
+            <input type="text" class="form-control" placeholder="Search" x-ng-model="listOptions.searchText">
+          </form>
+          <li class="dropdown visible-xs">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-sort"></i> Sort by <i class="caret"></i></a>
+            <ul class="dropdown-menu" style="text-align: left;">
+              <li>
+                <a x-ng-click="listOptions.sortField='title'; listOptions.reverseSort=false">
+                  <i class="fa fa-check" ng-style="{visibility: listOptions.sortField=='title' && !listOptions.reverseSort ? 'visible' : 'hidden'}"></i> Sort by Title: A-Z
+                </a>
+              </li>
+              <li>
+                <a x-ng-click="listOptions.sortField='title'; listOptions.reverseSort=true">
+                  <i class="fa fa-check" ng-style="{visibility: listOptions.sortField=='title' && listOptions.reverseSort ? 'visible' : 'hidden'}"></i> Sort by Title: Z-A
+                </a>
+              </li>
+              <li>
+                <a x-ng-click="listOptions.sortField='dateModified'; listOptions.reverseSort=true">
+                  <i class="fa fa-check" ng-style="{visibility: listOptions.sortField=='dateModified' && listOptions.reverseSort ? 'visible' : 'hidden'}"></i> Sort by Newest
+                </a>
+              </li>
+              <li>
+                <a x-ng-click="listOptions.sortField='dateModified'; listOptions.reverseSort=false">
+                  <i class="fa fa-check" ng-style="{visibility: listOptions.sortField=='dateModified' && !listOptions.reverseSort ? 'visible' : 'hidden'}"></i> Sort by Oldest
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right clearfix">
+          <li>
+            <a onclick="return false;" x-ng-click="requestNotificationCenter();">
+              <i class="fa fa-comments"></i> Notifications
+              <span class="badge">{{notificationCount()}}</span>
+            </a>
+          </li>
+
+          <!--<li class="dropdown">-->
+            <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-pencil"></i> Create New... <i class="caret"></i></a>-->
+            <!--<ul class="dropdown-menu" style="text-align: left;">-->
+              <!--<li x-ng-repeat="template in templates">-->
+                <!--<a href="#/new/{{template.id}}">{{template.label}}</a>-->
+              <!--</li>-->
+            <!--</ul>-->
+          <!--</li>-->
+
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> {{currentUser}} <i class="caret"></i></a>
+            <ul class="dropdown-menu" style="text-align: left;">
+              <li x-ng-class="{'disabled':syncInProgress}">
+                <a onclick="return false;" x-ng-click="requestLogout();" href="#">Sign Out</a>
+              </li>
+              <li class="divider"></li>
+              <li>
+                <a href="#/about">About Contributor Tool &mdash; {{applicationVersion}}</a>
+              </li>
+              <li>
+                <a href="whatsnew.html" target="_blank">What's New in Contributor Tool?</a>
+              </li>
+            </ul>
+          </li>
+
+          <li x-ng-class="{ 'hide': !hasFullscreen() }"><a class="fullscreen-toggle" onclick="return false;" x-ng-click="toggleFullscreen()"><i class="fa fa-arrows-alt fa-inverse"></i></a></li>
+        </ul>
+      </div> <!-- /.navbar-collapse -->
+    </div>
+  </nav>
+
+  <section class="container" x-ng-view></section>
+
+  <script src="webjars/jquery/2.1.1/jquery.min.js"></script>
+  <script src="webjars/underscorejs/1.7.0/underscore-min.js"></script>
+
+  <script src="lib/indexeddb-polyfill.js"></script>
+  <script src="webjars/toastr/2.0.1/toastr.min.js"></script>
+  <script src="webjars/spin-js/1.3.3/spin.js"></script>
+
+  <script src="webjars/momentjs/2.10.2/min/moment-with-locales.min.js"></script>
+  <script src="webjars/screenfulljs/1.1.0/screenfull.js"></script>
+
+  <script src="webjars/angularjs/1.3.1/angular.min.js"></script>
+  <script src="webjars/angularjs/1.3.1/angular-route.min.js"></script>
+  <script src="webjars/angularjs/1.3.1/angular-touch.min.js"></script>
+  <script src="webjars/angular-ui/0.4.0/angular-ui.min.js"></script>
+
+  <script src="atex/onecms-theme/3.7.0/js/onecms-theme.js"></script>
+  <script src="atex/onecms-lib/2.1.1-SNAPSHOT/onecms-lib-service-angular-2.1.1-src.js"></script>
+  <script src="atex/onecms-lib/2.1.1-SNAPSHOT/onecms-lib-ui-framework-angular-2.1.1-src.js"></script>
+
+  <script src="webjars/requirejs/2.1.14-3/require.min.js"></script>
+
+  <script src="js/atex/init.js"></script>
+
+  <script>
+        angular.element(document).ready(function() {
+          act.application.initialize(function() {
+            angular.bootstrap(document, ['atex.art']);
+          }, function(error) {
+            console.log("Error while initializing Contributor Tool:", error);
+          });
+        });
+      </script>
+
+  <script src="js/atex/common.js"></script>
+  <script src="js/atex/content.js"></script>
+  <script src="js/atex/upgrade.js"></script>
+  <script src="js/atex/notification.js"></script>
+
+  <script src="js/atex/version-service.js"></script>
+  <script src="js/atex/metadata-api.js"></script>
+
+  <script src="js/atex/generic-store.js"></script>
+  <script src="js/atex/delegating-store.js"></script>
+
+  <script src="js/art/app-module.js"></script>
+  <script src="js/art/app.js"></script>
+
+  <script src="js/art/services/sync-modal.js"></script>
+  <script src="js/art/services/confirm-modal.js"></script>
+  <script src="js/art/services/conflict-modal.js"></script>
+  <script src="js/art/services/error-modal.js"></script>
+  <script src="js/art/services/reload-modal.js"></script>
+
+  <script src="js/art/services/version-service-angular.js"></script>
+  <script src="js/art/services/synchronization-service-angular.js"></script>
+
+  <script src="js/art/services/generic-store-angular.js"></script>
+  <script src="js/art/services/template-store-angular.js"></script>
+  <script src="js/art/services/userdata-store-angular.js"></script>
+  <script src="js/art/services/content-store-angular.js"></script>
+  <script src="js/art/services/layout-service-angular.js"></script>
+  <script src="js/art/services/list-options.js"></script>
+
+  <script src="js/art/services/notification-service-angular.js"></script>
+
+  <script src="js/art/controllers/details-controller.js"></script>
+  <script src="js/art/controllers/list-controller.js"></script>
+  <script src="js/art/controllers/navbar-controller.js"></script>
+  <script src="js/art/controllers/error-controller.js"></script>
+  <script src="js/art/controllers/about-controller.js"></script>
+
+  <script src="js/art/directives/disabledrop.js"></script>
+  <script src="js/art/directives/autoclosenavbar.js"></script>
+  <script src="js/art/directives/spinner.js"></script>
+  <script src="js/art/directives/formsubmit.js"></script>
+  <script src="js/art/directives/autofocus.js"></script>
+  <script src="js/art/directives/tooltip.js"></script>
+
+  <script src="js/art/filters/empty.js"></script>
+
+  <script src="js/art/copyfit/print-data.js"></script>
+  <script src="js/art/copyfit/copyfit-utils.js"></script>
+
+</div>
+</body>
+</html>
