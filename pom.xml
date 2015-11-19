@@ -5,13 +5,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.atex</groupId>
-  <artifactId>act-override</artifactId>
+  <artifactId>act-customization</artifactId>
   <packaging>war</packaging>
-  <version>3.1.1-SNAPSHOT</version>
+  <version>3.0.1-SNAPSHOT</version>
 
-  <name>Atex Contributor Tool Override</name>
+  <name>Atex Contributor Tool Customization</name>
 
-  <description><![CDATA[The Atex Contributor Tool Override.]]></description>
+  <description><![CDATA[The Atex Contributor Tool Customization.]]></description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -127,13 +127,13 @@
     <dependency>
       <groupId>com.atex</groupId>
       <artifactId>act</artifactId>
-      <version>3.1.1-SNAPSHOT</version>
+      <version>3.0.1</version>
       <type>war</type>
     </dependency>
   </dependencies>
 
   <build>
-    <finalName>act-override</finalName>
+    <finalName>act-customization</finalName>
 
     <plugins>
       <plugin>
@@ -165,7 +165,7 @@
         <version>8.1.9.v20130131</version>
         <configuration>
           <webApp>
-            <contextPath>/act-override</contextPath>
+            <contextPath>/act-customization</contextPath>
           </webApp>
         </configuration>
       </plugin>
@@ -176,7 +176,7 @@
         <version>7.4.5-polopoly-1.11</version>
         <configuration>
           <webAppConfig>
-            <contextPath>/act-override</contextPath>
+            <contextPath>/act-customization</contextPath>
           </webAppConfig>
         </configuration>
       </plugin>

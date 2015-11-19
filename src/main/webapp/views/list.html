@@ -2,16 +2,16 @@
   <thead class="hidden-xs">
     <tr>
       <th style="width: 37px;">
-        <span class="fa fa-refresh" x-ng-class="{'fa-spin': syncInProgress}" role="button" x-ng-click="synchronize()" title="Synchronize"></span>
+        <span x-ng-show="syncInProgress" class="onecms-spinner-icon sync-spinner" x-tooltip title="Synchronizing data..."></span>
       </th>
-      <th class="no-select" role="button" x-ng-click="sortBy('title')">Title <i class="fa" x-ng-class="{'fa-angle-down': listOptions.sortField=='title' && listOptions.reverseSort, 'fa-angle-up': listOptions.sortField=='title' && !listOptions.reverseSort}"></i></th>
-      <th class="no-select" role="button" style="width: 100px;" x-ng-click="sortBy('title')">Status <i class="fa" x-ng-class="{'fa-angle-down': listOptions.sortField=='title' && listOptions.reverseSort, 'fa-angle-up': listOptions.sortField=='title' && !listOptions.reverseSort}"></i></th>
-      <th class="no-select" role="button" style="width: 180px;" x-ng-click="sortBy('dateModified')">Modified <i class="fa" x-ng-class="{'fa-angle-down': listOptions.sortField=='dateModified' && listOptions.reverseSort, 'fa-angle-up': listOptions.sortField=='dateModified' && !listOptions.reverseSort}"></i></th>
-      <th class="no-select action-column">Actions</th>
+      <th>Title</th>
+      <th style="width: 100px;">Status</th>
+      <th style="width: 180px;">Modified</th>
+      <th class="action-column">Actions</th>
     </tr>
   </thead>
-  <tbody x-ng-repeat="article in articles | filter:listFilter | orderBy:sortPredicate:listOptions.reverseSort">
-    <tr ng-init="itemDetails = getItemDetails(article)">
+  <tbody x-ng-repeat="article in articles | orderBy:'meta.modificationDate':true">
+    <tr>
       <td class="expander-column">
         <a class="btn-link list-details-expander collapsed" data-toggle="collapse" data-target="#list-details-{{id(article.meta.id)}}">
           <i class="fa fa-caret-down fa-lg"></i>
@@ -20,12 +20,12 @@
       <td>
         <div class="list-title-wrapper">
           <div class="list-title">
-            <a x-ng-show="itemDetails.hasTemplate;" href="#/edit/{{article.meta.id}}">{{getDisplayTitle(itemDetails)}}</a>
-            <span x-ng-show="!itemDetails.hasTemplate;" class="text-muted">{{getDisplayTitle(itemDetails)}}</span>
+            <a x-ng-show="hasTemplateFor(article);" href="#/edit/{{article.meta.id}}">{{getDisplayTitle(article)}}</a>
+            <span x-ng-show="!hasTemplateFor(article);" class="text-muted">{{getDisplayTitle(article)}}</span>
           </div>
 
           <div class="status-icons">
-            <span x-ng-show="!itemDetails.hasTemplate;">
+            <span x-ng-show="!hasTemplateFor(article);">
               <span class="label label-warning visible-md visible-lg" x-popover title="No template" data-content="There is no template registered for this type of content; you will not be able to edit it.">No template</span>
               <i class="fa fa-exclamation-circle fa-lg fa-fw hidden-md hidden-lg text-warning" x-tooltip title="No template"></i>
             </span>
@@ -86,14 +86,12 @@
             <span class="caret"></span>
           </button>
 
-          <ul class="dropdown-menu dropdown-menu-right" role="menu" ng-init="suitableTemplates = getTemplatesFor(itemDetails)">
-            <li x-ng-class="{ 'disabled': !itemDetails.hasTemplate }"><a onclick="return false;" x-ng-click="editArticle(article);">Edit content</a></li>
-            <li x-ng-show="suitableTemplates.length > 1"><ul class="list-view-edit-menu" x-ng-repeat="suitableTemplate in suitableTemplates"><li><a onclick="return false;" x-ng-click="editArticleUsing(article, suitableTemplate);">Edit using {{suitableTemplate.label}}</a></li></ul></li>
+          <ul class="dropdown-menu pull-right" role="menu">
+            <li x-ng-class="{ 'disabled': !hasTemplateFor(article) }"><a onclick="return false;" x-ng-click="editArticle(article);">Edit content</a></li>
             <li x-ng-class="{ 'disabled': !isSendable(article) }"><a onclick="return false;" x-ng-click="storeToServer(article)">Send to server</a></li>
             <li x-ng-show="article.local.conflict"><a onclick="return false;" x-ng-click="requestConflictResolution(article);">Resolve conflict</a></li>
             <li><a onclick="return false;" x-ng-click="requestDestroy(article);">Remove from device</a></li>
           </ul>
-
         </div>
       </td>
     </tr>
@@ -102,10 +100,12 @@
       <td colspan="3">
         <div class="collapse" id="list-details-{{id(article.meta.id)}}">
           <div class="details">
-            <h4>{{getTemplateLabel(itemDetails)}}</h4>
+            <h4>{{getTemplateLabel(article)}}</h4>
             <dl class="dl-horizontal small">
               <dt>Content type</dt>
               <dd>{{article.data.aspects.contentData.data._type}}</dd>
+              <dt>Status</dt>
+              <dd>{{article.meta.id}}</dd>
               <dt>Creation date</dt>
               <dd>{{toDateString(article.meta.creationDate)}}</dd>
               <dt>Modification date</dt>
